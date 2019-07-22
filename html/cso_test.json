@@ -1,0 +1,23 @@
+{
+  "name": "<https://cso.kmi.open.ac.uk/topics/computer_science>",
+  "uncertainty": 3,
+  "children": [
+    {
+      "name": "<https://cso.kmi.open.ac.uk/topics/artificial_intelligence>",
+      "uncertainty": 3,
+      "children": [
+        {
+          "name": "<https://cso.kmi.open.ac.uk/topics/cognitive_systems>",
+          "uncertainty": 3,
+          "children": [
+            {
+              "name": "<https://cso.kmi.open.ac.uk/topics/fuzzy_cognitive_maps>",
+              "uncertainty": 3,
+              "size": 10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
