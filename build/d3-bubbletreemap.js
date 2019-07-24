@@ -202,13 +202,46 @@
         return centroid;
     }
 
+
     function colorHierarchy(hierarchyRoot, colormap) {
+        var classDict = {
+            "https://cso.kmi.open.ac.uk/topics/artificial_intelligence" : 0,
+            "https://cso.kmi.open.ac.uk/topics/robotics" : 1,
+            "https://cso.kmi.open.ac.uk/topics/computer_vision" : 2,
+            "https://cso.kmi.open.ac.uk/topics/computer_operating_systems" : 3,
+            "https://cso.kmi.open.ac.uk/topics/bioinformatics" : 4,
+            "https://cso.kmi.open.ac.uk/topics/software_engineering" : 5,
+            "https://cso.kmi.open.ac.uk/topics/information_technology" : 6,
+            "https://cso.kmi.open.ac.uk/topics/data_mining" : 7,
+            "https://cso.kmi.open.ac.uk/topics/information_retrieval" : 8,
+            "https://cso.kmi.open.ac.uk/topics/computer_programming" : 9, 
+            "https://cso.kmi.open.ac.uk/topics/computer_security" : 10,
+            "https://cso.kmi.open.ac.uk/topics/theoretical_computer_science" : 11,
+            "https://cso.kmi.open.ac.uk/topics/computer_communication_networks" : 12,
+            "https://cso.kmi.open.ac.uk/topics/internet" : 13,
+            "https://cso.kmi.open.ac.uk/topics/formal_languages" : 14,
+            "https://cso.kmi.open.ac.uk/topics/software" : 15,
+            "https://cso.kmi.open.ac.uk/topics/hardware" : 16,
+            "https://cso.kmi.open.ac.uk/topics/computer_hardware" : 17,
+            "https://cso.kmi.open.ac.uk/topics/computer_system" : 18,
+            "https://cso.kmi.open.ac.uk/topics/computer_systems" : 18,
+            "https://cso.kmi.open.ac.uk/topics/computer_network" : 19,
+            "https://cso.kmi.open.ac.uk/topics/computer_networks" : 19,
+            "https://cso.kmi.open.ac.uk/topics/human_computer_interaction" : 20,
+            "https://cso.kmi.open.ac.uk/topics/human-computer_interaction" :20,
+            "https://cso.kmi.open.ac.uk/topics/computer_aided_design" : 21,
+            "https://cso.kmi.open.ac.uk/topics/computer-aided_design" : 21,
+            "https://cso.kmi.open.ac.uk/topics/operating_system" : 22,
+            "https://cso.kmi.open.ac.uk/topics/operating_systems" : 22
+        }
         let colorIndex = 0;
         hierarchyRoot.children.forEach(function(child) {
+            //console.log(child.data.name, classDict[child.data.name.substring(1, child.data.name.length-1)]);
+            colorIndex = classDict[child.data.name.substring(1, child.data.name.length-1)];
             child.descendants().forEach(function(desc){
                 desc.color = colormap[colorIndex % colormap.length];
             });
-            colorIndex++;
+            //colorIndex++;
         });
     }
 
@@ -304,17 +337,17 @@
 
         let arcs = [];
         
-        /*if (circles.length == 1) {
+        if (circles.length == 1) {
         // for single circle
             let circle = circles[0];
             arcs.push(new Arc(circle.center.x, circle.center.y, 0, 2*Math.PI, circle.radius));
-        } else {*/
+        } else {
         // for multiple circles
             let outerCircleRing = getOuterCircleRing(circles, curvature);
 
             arcs = arcs.concat(generateCircleArcs(outerCircleRing));
             arcs = arcs.concat(generateTangentArcs(outerCircleRing, curvature));
-        //}
+        }
 
         return arcsToPaths(arcs);
     }
