@@ -283,11 +283,13 @@
         }
     }
 
-    function Arc(x, y, startAngle, endAngle, radius) {
+    function Arc(x, y, startAngle, endAngle, radius, startPoint = null, endPoint = null) {
         this.center = new Vec2(x, y);
         this.startAngle = startAngle;
         this.endAngle = endAngle;
         this.radius = radius;
+        this.startPoint = startPoint;
+        this.endPoint = endPoint;
     }
 
     function Circle(x, y, radius) {
@@ -340,7 +342,7 @@
         if (circles.length == 1) {
         // for single circle
             let circle = circles[0];
-            arcs.push(new Arc(circle.center.x, circle.center.y, 0, 2*Math.PI, circle.radius));
+            arcs.push(new Arc(circle.center.x, circle.center.y, 0, 2*Math.PI, circle.radius, getCord(circle.center, 0, circle.radius), getCord(circle.center, 0.001, circle.radius)));
         } else {
         // for multiple circles
             let outerCircleRing = getOuterCircleRing(circles, curvature);
@@ -452,8 +454,10 @@
             let centerToSecondIntersection = secondIntersection.sub(circle.center);
             let arcStartAngle = new Vec2(0, -1).angle(centerToFirstIntersection);
             let arcEndAngle = new Vec2(0, -1).angle(centerToSecondIntersection);
+            let artStartPoint = getCord(circle.center, arcStartAngle, circle.radius);
+            let artEndPoint = getCord(circle.center, arcEndAngle, circle.radius);
 
-            arcs.push(new Arc(circle.center.x, circle.center.y, arcStartAngle, arcEndAngle, circle.radius));
+            arcs.push(new Arc(circle.center.x, circle.center.y, arcStartAngle, arcEndAngle, circle.radius, artStartPoint, artEndPoint));
         }
 
         return arcs;
@@ -472,18 +476,31 @@
             let intersectionToSecondCenter = secondCircle.center.sub(intersection);
             let arcEndAngle = new Vec2(0, -1).angle(intersectionToFirstCenter);
             let arcStartAngle = new Vec2(0, -1).angle(intersectionToSecondCenter);
+            let artStartPoint = getCord(intersection, arcStartAngle, curvature);
+            let artEndPoint = getCord(intersection, arcEndAngle, curvature);
 
-            arcs.push(new Arc(intersection.x, intersection.y, arcStartAngle, arcEndAngle, curvature));
+            arcs.push(new Arc(intersection.x, intersection.y, arcStartAngle, arcEndAngle, curvature, artStartPoint, artEndPoint));
         }
 
         return arcs;
     }
 
+    function getCord(center, angle, dist) {
+
+        let result = new Vec2();
+        dist = dist || 1;
+      
+        result.x = center.x + dist * Math.cos(angle-Math.PI/2);
+        result.y = center.y + dist * Math.sin(angle-Math.PI/2);
+      
+        return result;
+      };
+
     function arcsToPaths(arcs) {
         let paths = [];
         let arcGen = d3.arc();
 
-        arcs.forEach(function (arc) {
+        /*arcs.forEach(function (arc) {
             let startAngleTemp = arc.startAngle;
 
             if (startAngleTemp > arc.endAngle) {
@@ -499,8 +516,108 @@
                 }),
                 transform: "translate(" + arc.center.x + "," + arc.center.y + ")"
             });
+        });*/
+
+        let curPoint = arcs[0].endPoint;
+        let startAngleTemp = arcs[0].startAngle;
+            if (startAngleTemp > arcs[0].endAngle) {
+                startAngleTemp -= 2 * Math.PI;
+            }
+            
+        let large_arc_flag = (arcs[0].endAngle - startAngleTemp)>Math.PI ? 1 : 0;
+        let sweep_flag = 0>(arcs.length/2-1) ? 0 : 1;
+        let path = `M ${arcs[0].startPoint.x} ${arcs[0].startPoint.y}
+                    A ${arcs[0].radius} ${arcs[0].radius}, 0 ${large_arc_flag} ${sweep_flag}, ${curPoint.x} ${curPoint.y}`
+        let i = 0;
+        let count = 1;
+        while (count < arcs.length) {
+            //console.log(getCord(arc.center, arc.startAngle, arc.radius), arc.startPoint);
+            i = (i+1)%arcs.length;
+            /*count++;
+            arc = arcs[i];
+            console.log(arc.startPoint, arc.endPoint);*/
+            if (Math.abs(arcs[i].startPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].startPoint.y-curPoint.y)<1e-6) {
+            //if (true){
+                console.log(i);
+                curPoint = arcs[i].endPoint;
+                count++;
+            } else if(Math.abs(arcs[i].endPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].endPoint.y-curPoint.y)<1e-6) {
+                console.log(i);
+                curPoint = arcs[i].startPoint;
+                count++;
+            } else {
+                continue;
+            }
+            // rx ry, x-axis-rotation large-arc-flag sweep-flag, destinationx destinationy
+            let startAngleTemp = arcs[i].startAngle;
+            if (startAngleTemp > arcs[i].endAngle) {
+                startAngleTemp -= 2 * Math.PI;
+            }
+            
+            let large_arc_flag = (arcs[i].endAngle - startAngleTemp)>Math.PI ? 1 : 0;
+            let sweep_flag = i>(arcs.length/2-1) ? 0 : 1;
+            path += 
+            `A  ${arcs[i].radius} ${arcs[i].radius}, 0 ${large_arc_flag} ${sweep_flag}, ${curPoint.x} ${curPoint.y}`
+        }
+        paths.push({
+            d: path,
+            //transform: "translate(" + arc.center.x + "," + arc.center.y + ")"
+            transform: "translate(0, 0)"
         });
 
+        /*if(arcs.length == 1) {
+            let curPoint = arcs[0].endPoint;
+            let path = `M ${arcs[0].startPoint.x} ${arcs[0].startPoint.y}
+                    A ${arcs[0].radius} ${arcs[0].radius}, 0 1 0, ${curPoint.x} ${curPoint.y}`
+            paths.push({
+                d: path,
+                //transform: "translate(" + arc.center.x + "," + arc.center.y + ")"
+                transform: "translate(0, 0)"
+            });
+        } else {
+            let i = 0;
+            let curPoint = arcs[0].endPoint;
+            let path = `M ${arcs[0].startPoint.x} ${arcs[0].startPoint.y}
+                    A ${arcs[0].radius} ${arcs[0].radius}, 0 1 1, ${curPoint.x} ${curPoint.y}`
+    
+            let count = 1;
+            while (count < arcs.length) {
+                //console.log(getCord(arc.center, arc.startAngle, arc.radius), arc.startPoint);
+                i = (i+1)%arcs.length;
+                /*count++;
+                arc = arcs[i];
+                console.log(arc.startPoint, arc.endPoint);
+                if (Math.abs(arcs[i].startPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].startPoint.y-curPoint.y)<1e-6) {
+                //if (true){
+                    console.log(i);
+                    curPoint = arcs[i].endPoint;
+                    count++;
+                } else if(Math.abs(arcs[i].endPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].endPoint.y-curPoint.y)<1e-6) {
+                    console.log(i);
+                    curPoint = arcs[i].startPoint;
+                    count++;
+                } else {
+                    continue;
+                }
+                // rx ry, x-axis-rotation large-arc-flag sweep-flag, destinationx destinationy
+                let startAngleTemp = arcs[i].startAngle;
+                if (startAngleTemp > arcs[i].endAngle) {
+                    startAngleTemp -= 2 * Math.PI;
+                }
+                
+                let large_arc_flag = (arcs[i].endAngle - startAngleTemp)>Math.PI ? 1 : 0;
+                let sweep_flag = i>(arcs.length/2-1) ? 0 : 1;
+                path += 
+                `A  ${arcs[i].radius} ${arcs[i].radius}, 0 ${large_arc_flag} ${sweep_flag}, ${curPoint.x} ${curPoint.y}`
+            }
+            paths.push({
+                d: path,
+                //transform: "translate(" + arc.center.x + "," + arc.center.y + ")"
+                transform: "translate(0, 0)"
+            });
+        }*/
+
+        console.log(paths);
         return paths;
     }
 
@@ -522,6 +639,7 @@
                 contours = contours.concat(generatedContour);
             });
         }
+        contours.reverse();
         return contours;
     }
 

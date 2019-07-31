@@ -3,20 +3,46 @@
   "uncertainty": 3,
   "children": [
     {
-      "name": "<https://cso.kmi.open.ac.uk/topics/artificial_intelligence>",
+      "name": "<https://cso.kmi.open.ac.uk/topics/computer_systems>",
+      "origin": "information",
+      "strPath": "<https://cso.kmi.open.ac.uk/topics/computer_science>&-&<https://cso.kmi.open.ac.uk/topics/computer_systems>&-&<https://cso.kmi.open.ac.uk/topics/database>",
       "uncertainty": 3,
-      "children": [
-        {
-          "name": "<https://cso.kmi.open.ac.uk/topics/cognitive_systems>",
-          "uncertainty": 3,
-          "children": [
-            {
-              "name": "<https://cso.kmi.open.ac.uk/topics/fuzzy_cognitive_maps>",
-              "uncertainty": 3,
-              "size": 10
-            }
-          ]
-        }
+      "sentence": [
+        "We examine how animating a viewpoint change in a spatial information system affects a user\u2019s ability to build a mental map of the information in the space"
+      ],
+      "size": 2,
+      "candidates": [
+        "<https://cso.kmi.open.ac.uk/topics/information_technology>",
+        "<https://cso.kmi.open.ac.uk/topics/statistical_analysis>",
+        "<https://cso.kmi.open.ac.uk/topics/video_database>",
+        "<https://cso.kmi.open.ac.uk/topics/transaction_database>",
+        "<https://cso.kmi.open.ac.uk/topics/database_systems>",
+        "<https://cso.kmi.open.ac.uk/topics/database>",
+        "<https://cso.kmi.open.ac.uk/topics/database_management>",
+        "<https://cso.kmi.open.ac.uk/topics/database_management_system>",
+        "<https://cso.kmi.open.ac.uk/topics/medical_database>",
+        "<https://cso.kmi.open.ac.uk/topics/database_schemas>"
+      ]
+    },
+    {
+      "name": "<https://cso.kmi.open.ac.uk/topics/computer_systems>",
+      "origin": "Users",
+      "strPath": "<https://cso.kmi.open.ac.uk/topics/computer_science>&-&<https://cso.kmi.open.ac.uk/topics/computer_systems>&-&<https://cso.kmi.open.ac.uk/topics/cloud_computing>&-&<https://cso.kmi.open.ac.uk/topics/software_as_a_service_%28saas%29>&-&<https://cso.kmi.open.ac.uk/topics/saas>&-&<https://cso.kmi.open.ac.uk/topics/iaas>",
+      "uncertainty": 3,
+      "sentence": [
+        "Users commonly report that they prefer animation, and yet there has been very little research that attempts to understand how animation affects users\u2019 performance"
+      ],
+      "size": 6,
+      "candidates": [
+        "<https://cso.kmi.open.ac.uk/topics/cloud_services>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud_data>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud-based_architecture>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud_computing>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud_software_architecture>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud_computing_services>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud_service>",
+        "<https://cso.kmi.open.ac.uk/topics/cloud_computing_environments>",
+        "<https://cso.kmi.open.ac.uk/topics/iaas>"
       ]
     }
   ]

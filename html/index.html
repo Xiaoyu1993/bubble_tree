@@ -9,19 +9,27 @@
     <script type='text/javascript' src="https://rawgit.com/bgrins/TinyColor/master/tinycolor.js"></script>
     <script type='text/javascript' src="../build/d3-bubbletreemap.js"></script>
     <script>
-        function doIt() {
-            let svg = d3.select("#svgCircles");
+        function doIt(fileName1, fileName2 = null) {
+            let svg1 = d3.select("#svgCircles1");
 
-            d3.json("cso_query_result.json?nocache=" + (new Date()).getTime(), function (error, data) {
-                drawChart(data, svg);
+            d3.json(fileName1 + "?nocache=" + (new Date()).getTime(), function (error, data) {
+                drawChart(data, svg1);
             });
+
+            if(fileName2) {
+                let svg2 = d3.select("#svgCircles2");
+
+                d3.json(fileName2 + "?nocache=" + (new Date()).getTime(), function (error, data) {
+                    drawChart(data, svg2);
+                });
+            }
         }
 
         function drawChart(data, svg) {
             // Create hierarchy.
             let root = d3.hierarchy(data)
                 //.sum(function(d) { return Math.sqrt(d.size) / 10; }) // For flare.
-                .sum(function(d) { return d.size; })
+                .sum(function(d) { return d.size*10; })
                 .sort(function(a, b) { return b.value - a.value; });
 
             // Create bubbletreemap.
@@ -44,13 +52,27 @@
             let contourGroup = svg.append("g")
                 .attr("class", "contour");
 
-            contourGroup.selectAll("path")
+            path = contourGroup.selectAll("path")
                 .data(bubbletreemap.getContour())
                 .enter().append("path")
                 .attr("d", function(arc) { return arc.d; })
                 .style("stroke", "black")
                 .style("stroke-width", function(arc) { return arc.strokeWidth; })
-                .attr("transform", function(arc) {return arc.transform;});
+                .style("fill-opacity", 0.0)
+                .attr("transform", function(arc) {return arc.transform;})
+                .on("mouseover", function(d) {
+                    // Use D3 to select element, change size
+                    d3.select(this)
+                    .style("fill-opacity", 0.8) 
+                    .style("fill", "gray");                
+                })
+                .on("mouseout", function(d) {
+                    // Use D3 to select element, change size
+                    d3.select(this)
+                    .style("fill-opacity", 0.0)    
+                    .style("fill", null)
+                });
+                
 
             // Draw circles.
             let circleGroup = svg.append("g")
@@ -63,29 +85,41 @@
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; })
                 .style("fill", function(d) { return d.color; })
+                .style("fill-opacity", 0.7)
                 .style("stroke", "black")
                 .style("stroke-width", "3")
                 .on("mouseover", function(d, i) {
                     // Use D3 to select element, change size
                     d3.select(this)
                     .attr("r", d.r*1.1)
-                    .style("fill", d3.rgb(d.color).brighter(1));
+                    .style("fill", d3.rgb(d.color).brighter(0.3));
                     
                     // Specify where to put label of text
+                    circleGroup.append("rect")
+                        .attr("id", "r" + "-" + i)
+                        .attr("x", d.x)
+                        .attr("y", d.y-15)
+                        .attr("width", 200)
+                        .attr("height", 30)
+                        .attr("cornerRadius", 3)
+                        .attr("fill", "white"); 
+
                     circleGroup.append("text")
                         .attr("id", "t" + "-" + i)
                         .attr("x", d.x+10)
                         .attr("y", d.y)
                         .attr("dy", ".35em")
-                        .text(d.data.name );                     
+                        .style("fill", "black")
+                        .text(d.data.name.substring(d.data.name.lastIndexOf("/")+1, d.data.name.length-1) );                     
                 })
                 .on("mouseout", function(d, i) {
                     // Use D3 to select element, change size
                     d3.select(this)
                     .attr("r", d.r)
-                    .style("fill", d.color);;
+                    .style("fill", d.color);
                     // Select text by id and then remove
                     d3.select("#t" + "-" + i).remove();  // Remove text location
+                    d3.select("#r" + "-" + i).remove();  // Remove text location
                 });
 
             /*
@@ -105,9 +139,36 @@
         }
     </script>
 </head>
-<body onload="doIt()">
-    <div id="svgCirclesContainer">
-        <svg id="svgCircles" style="border:1px solid black; position: fixed;" width="1920" height="1280"></svg>
+<body onload="doIt('cso_query_result.json')">
+    <!--div id="svgCirclesContainer">
+        <svg id="svgCircles" style="border:1px solid black; position: fixed;" width="960" height="1280"></svg>
+    </div-->
+    <div class="row">
+        <div class="left_col" id="svgCirclesContainer1">
+            <svg id="svgCircles1" style="border:1px solid black; position: fixed;" width="960" height="1280"></svg>
+        </div>
+
+        <div class="right_col" id="svgCirclesContainer2">
+            <svg id="svgCircles2" style="border:1px solid black; position: fixed;" width="960" height="1280"></svg>
+        </div>
     </div>
 </body>
+<style>
+    .left_col {
+    float: left;
+    width: 50%;
+    }
+
+    .right_col {
+    float: right;
+    width: 50%;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+    content: "";
+    display: table;
+    clear: both;
+    }
+</style>
 </html>
