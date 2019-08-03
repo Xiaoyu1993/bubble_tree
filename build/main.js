@@ -62,7 +62,7 @@ function drawChart(data, svg) {
     path = contourGroup.selectAll("path")
         .data(bubbletreemap.getContour())
         .enter().append("path")
-        .attr("id", function(d) { return "c-" + d.name.substring(d.name.lastIndexOf("/")+1, d.name.length-1);})
+        .attr("id", function(d) { return "c-" + d.name.substring(d.name.lastIndexOf("/")+1, d.name.length-1).replace(/%/g, '');})
         .attr("d", function(arc) { return arc.d; })
         .style("stroke", "black")
         .style("stroke-width", function(arc) { return arc.strokeWidth; })
@@ -73,13 +73,15 @@ function drawChart(data, svg) {
             // Use D3 to select element, change size
             d3.selectAll("#"+this.id)
             .style("fill-opacity", 0.8) 
-            .style("fill", "#b3b3b3");        
+            .style("fill", "#b3b3b3")
+            .style("stroke-width", function(arc) { return arc.strokeWidth*2; });        
         })
         .on("mouseout", function(d) {
             // Use D3 to select element, change size
             d3.selectAll("#"+this.id)
             .style("fill-opacity", 0.0) 
-            .style("fill", "white"); 
+            .style("fill", "white")
+            .style("stroke-width", function(arc) { return arc.strokeWidth; }); 
         });
         
 
