@@ -133,6 +133,8 @@
             world.createJoint(distanceJoint);
         });
 
+        //console.log(layerClusters, layerClusterBodies);
+
         // Prepare for simulation. Typically we use a time step of 1/60 of a
         // second (60Hz) and 10 iterations. This provides a high quality simulation
         // in most game scenarios.
@@ -141,7 +143,7 @@
         let positionIterations = 2;
 
         // Simulation loop.
-        for (let i = 0; i < 1000; ++i) {
+        for (let i = 0; i < 8000; ++i) {
             // Instruct the world to perform a single step of simulation.
             // It is generally best to keep the time step and iterations fixed.
             world.step(timestep, velocityIterations, positionIterations);
@@ -538,11 +540,9 @@
             console.log(arc.startPoint, arc.endPoint);*/
             if (Math.abs(arcs[i].startPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].startPoint.y-curPoint.y)<1e-6) {
             //if (true){
-                console.log(i);
                 curPoint = arcs[i].endPoint;
                 count++;
             } else if(Math.abs(arcs[i].endPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].endPoint.y-curPoint.y)<1e-6) {
-                console.log(i);
                 curPoint = arcs[i].startPoint;
                 count++;
             } else {
@@ -565,59 +565,6 @@
             transform: "translate(0, 0)"
         });
 
-        /*if(arcs.length == 1) {
-            let curPoint = arcs[0].endPoint;
-            let path = `M ${arcs[0].startPoint.x} ${arcs[0].startPoint.y}
-                    A ${arcs[0].radius} ${arcs[0].radius}, 0 1 0, ${curPoint.x} ${curPoint.y}`
-            paths.push({
-                d: path,
-                //transform: "translate(" + arc.center.x + "," + arc.center.y + ")"
-                transform: "translate(0, 0)"
-            });
-        } else {
-            let i = 0;
-            let curPoint = arcs[0].endPoint;
-            let path = `M ${arcs[0].startPoint.x} ${arcs[0].startPoint.y}
-                    A ${arcs[0].radius} ${arcs[0].radius}, 0 1 1, ${curPoint.x} ${curPoint.y}`
-    
-            let count = 1;
-            while (count < arcs.length) {
-                //console.log(getCord(arc.center, arc.startAngle, arc.radius), arc.startPoint);
-                i = (i+1)%arcs.length;
-                /*count++;
-                arc = arcs[i];
-                console.log(arc.startPoint, arc.endPoint);
-                if (Math.abs(arcs[i].startPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].startPoint.y-curPoint.y)<1e-6) {
-                //if (true){
-                    console.log(i);
-                    curPoint = arcs[i].endPoint;
-                    count++;
-                } else if(Math.abs(arcs[i].endPoint.x-curPoint.x)<1e-6 && Math.abs(arcs[i].endPoint.y-curPoint.y)<1e-6) {
-                    console.log(i);
-                    curPoint = arcs[i].startPoint;
-                    count++;
-                } else {
-                    continue;
-                }
-                // rx ry, x-axis-rotation large-arc-flag sweep-flag, destinationx destinationy
-                let startAngleTemp = arcs[i].startAngle;
-                if (startAngleTemp > arcs[i].endAngle) {
-                    startAngleTemp -= 2 * Math.PI;
-                }
-                
-                let large_arc_flag = (arcs[i].endAngle - startAngleTemp)>Math.PI ? 1 : 0;
-                let sweep_flag = i>(arcs.length/2-1) ? 0 : 1;
-                path += 
-                `A  ${arcs[i].radius} ${arcs[i].radius}, 0 ${large_arc_flag} ${sweep_flag}, ${curPoint.x} ${curPoint.y}`
-            }
-            paths.push({
-                d: path,
-                //transform: "translate(" + arc.center.x + "," + arc.center.y + ")"
-                transform: "translate(0, 0)"
-            });
-        }*/
-
-        console.log(paths);
         return paths;
     }
 
@@ -634,6 +581,8 @@
                 // Assign color to contour.
                 generatedContour.forEach(function(segment) {
                     segment.strokeWidth = cluster.parent.uncertainty;
+                    segment.name = cluster.parent.data.name;
+                    //console.log(cluster);
                 });
 
                 contours = contours.concat(generatedContour);
@@ -651,7 +600,7 @@
             padding = 10,
             curvature = 10,
             colormap = [],
-            width = 1920,
+            width = 960,
             height = 1280,
             hierarchyRoot = [];
 
