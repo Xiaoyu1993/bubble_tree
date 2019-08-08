@@ -12,6 +12,7 @@
         });
 
         layerNodes.forEach(function(node) {
+            // filter out leaves
             let clusterNodes = node.descendants().filter(function(candidate){
                 return !candidate.children;
             });
@@ -28,9 +29,10 @@
                 }, 0);
 
                 let contourClusterParentUncertainty = clusterParent.uncertainty/2;                                // Padding for contour (contour lies 50% outside of parent node).
-                let planckClusterParentUncertainty = node !== clusterParent ? clusterParent.uncertainty : 0;      // Padding for force based layout (contours should not cut each other, i.e. full parent contour should be taken into account).
+                let planckClusterParentUncertainty = node !== clusterParent ? clusterParent.uncertainty : 2;      // Padding for force based layout (contours should not cut each other, i.e. full parent contour should be taken into account).
 
                 let interClusterSpacing = clusterNodes.length === 1 ? 0 : padding / 2.0; // For single circle: No padding, since it has no contour.
+                //let interClusterSpacing = clusterNodes.length === 1 ? 2 : padding / 2.0; // For single circle: Smallest padding to ensure all contours are visible
 
                 node.contourPadding = (node.depth - clusterParent.depth) * padding + uncertaintySum + contourClusterParentUncertainty;
                 node.planckPadding = (node.depth - clusterParent.depth) * padding + uncertaintySum + planckClusterParentUncertainty + interClusterSpacing;
@@ -96,6 +98,7 @@
                 });
 
                 let centroid = getCircleCentroid(circleList);
+                console.log("layer ", layerDepth, ":", currentPPClusters);
 
                 layoutClusters(currentPPClusters, centroid);
             });
@@ -128,7 +131,7 @@
                 layerClusterBody,
                 layerClusterBody.getPosition()
             );
-            distanceJoint.m_length = 0; // Set the length to zero as it's calculated as the distance between the anchors. TODO: PR on planck-js repo to fix bug.
+            distanceJoint.m_length = 1; // Set the length to zero as it's calculated as the distance between the anchors. TODO: PR on planck-js repo to fix bug.
 
             world.createJoint(distanceJoint);
         });
@@ -154,8 +157,9 @@
             for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
                 if(fixture.getShape().getType() === planck.Circle.TYPE) {
                     let center = body.getWorldPoint(fixture.getShape().getCenter());
-
                     let rawCircle = fixture.getUserData();
+
+                    console.log(rawCircle);
                     rawCircle.x = center.x;
                     rawCircle.y = center.y;
                 }
@@ -499,6 +503,9 @@
       };
 
     function arcsToPaths(arcs) {
+        if(arcs.length <= 0)
+            return [];
+
         let paths = [];
         let arcGen = d3.arc();
 
@@ -570,7 +577,7 @@
 
     function contourHierarchy(hierarchyRoot, padding, curvature) {
         let contours = [];
-        for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= 0; layerDepth--) {
+        for(let layerDepth = hierarchyRoot.height; layerDepth >= 0; layerDepth--) {
             // Get clusters of circles on this layer.
             let layerClusters = getLayerClusters(hierarchyRoot, layerDepth, padding);
 

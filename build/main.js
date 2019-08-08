@@ -69,19 +69,31 @@ function drawChart(data, svg) {
         .style("fill-opacity", 0.0) 
         .style("fill", "white")
         .attr("transform", function(arc) {return arc.transform;})
-        .on("mouseover", function(d) {
+        .on("mouseover", function(d, i) {
             // Use D3 to select element, change size
             d3.selectAll("#"+this.id)
             .style("fill-opacity", 0.8) 
             .style("fill", "#b3b3b3")
-            .style("stroke-width", function(arc) { return arc.strokeWidth*2; });        
+            .style("stroke-width", function(arc) { return arc.strokeWidth*2; });
+            
+            labelText = d.name.substring(d.name.lastIndexOf("/")+1, d.name.length-1);
+            // Specify where to put label of text
+            contourGroup.append("text")
+                .attr("id", "ct" + "-" + i)
+                .attr("x", 300)
+                .attr("y", 50)
+                .attr("dy", ".35em")
+                .style("fill", "black")
+                .text(labelText); 
         })
-        .on("mouseout", function(d) {
+        .on("mouseout", function(d, i) {
             // Use D3 to select element, change size
             d3.selectAll("#"+this.id)
             .style("fill-opacity", 0.0) 
             .style("fill", "white")
-            .style("stroke-width", function(arc) { return arc.strokeWidth; }); 
+            .style("stroke-width", function(arc) { return arc.strokeWidth; });
+
+            d3.select("#ct" + "-" + i).remove();  // Remove text location
         });
         
 
@@ -92,18 +104,23 @@ function drawChart(data, svg) {
     circleGroup.selectAll("circle")
         .data(leafNodes)
         .enter().append("circle")
+        .attr("id", function(d) { return "e-" + d.data.name.substring(d.data.name.lastIndexOf("/")+1, d.data.name.length-1).replace(/%/g, '');})
         .attr("r", function(d) { return d.r; })
         .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; })
         .style("fill", function(d) { return d.color; })
         //.style("fill-opacity", 0.7)
-        .style("stroke", "black")
-        .style("stroke-width", "3")
+        //.style("stroke", "black")
+        //.style("stroke-width", "1")
         .on("mouseover", function(d, i) {
             // Use D3 to select element, change size
-            d3.select(this)
+           /* d3.select(this)
             //.attr("r", d.r*1.1)
-            .style("fill", d3.rgb(d.color).brighter(0.5));
+            .style("fill", d3.rgb(d.color).darker(0.8));*/
+            
+            d3.selectAll("#"+this.id)
+            //d3.select(this)
+            .style("fill", d3.rgb(d.color).darker(1));
             
             labelText = d.data.name.substring(d.data.name.lastIndexOf("/")+1, d.data.name.length-1);
             // Specify where to put label of text
@@ -126,9 +143,10 @@ function drawChart(data, svg) {
         })
         .on("mouseout", function(d, i) {
             // Use D3 to select element, change size
-            d3.select(this)
-            //.attr("r", d.r)
+            d3.selectAll("#"+this.id)
+            //d3.select(this)
             .style("fill", d.color);
+            
             // Select text by id and then remove
             d3.select("#t" + "-" + i).remove();  // Remove text location
             d3.select("#r" + "-" + i).remove();  // Remove text location
