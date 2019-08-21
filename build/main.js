@@ -109,7 +109,7 @@ function drawChart(data, svg) {
         .attr("cx", function(d) { return d.x; })
         .attr("cy", function(d) { return d.y; })
         .style("fill", function(d) { return d.color; })
-        //.style("fill-opacity", 0.7)
+        .style("fill-opacity", 0.5)
         //.style("stroke", "black")
         //.style("stroke-width", "1")
         .on("mouseover", function(d, i) {

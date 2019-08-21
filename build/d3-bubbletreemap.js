@@ -12,7 +12,8 @@
         });
 
         layerNodes.forEach(function(node) {
-            // filter out leaves
+            // get all the leave nodes that actually form this cluster
+            // the data of these leave nodes + padding will be used to do the simulation
             let clusterNodes = node.descendants().filter(function(candidate){
                 return !candidate.children;
             });
@@ -70,15 +71,17 @@
 
         // Circle pack by d3.
         let pack = d3.pack()
-            .radius(function(d) { return d.r; })
+            .radius(function(d) { console.log(d); return d.r; })
             .size([width, height]);
 
         pack(hierarchyRoot); // Use pack to arrange circles on deepest layer.
 
-        for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= 0; layerDepth--) {
+        for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= hierarchyRoot.height - 3; layerDepth--) {
+        //for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= 0; layerDepth--) {
             // Get clusters of circles on this layer.
             let layerClusters = getLayerClusters(hierarchyRoot, layerDepth, padding);
-
+            //if(layerDepth == 2)
+            //        console.log("layer ", layerDepth, "cluster", i, ":", cluster.nodes[0].data.name);
             // Sort clusters by parents parent, to set correct center of attraction for bodies.
             let pps = [];
             layerClusters.forEach(function(cluster) {
@@ -87,7 +90,8 @@
             pps = pps.unique();
 
             // Do the layout.
-            pps.forEach(function(pp) {
+            pps.forEach(function(pp, i) {
+                
                 let currentPPClusters = layerClusters.filter(function(cluster) {
                     return cluster.parent.parent === pp;
                 });
@@ -98,7 +102,9 @@
                 });
 
                 let centroid = getCircleCentroid(circleList);
-                console.log("layer ", layerDepth, ":", currentPPClusters);
+
+                if(layerDepth == 2)
+                    console.log("layer ", layerDepth, "cluster", i, ":", currentPPClusters);
 
                 layoutClusters(currentPPClusters, centroid);
             });
@@ -113,15 +119,19 @@
 
         // Create bodies for groups.
         let layerClusterBodies = [];
-        layerClusters.forEach(function(layerCluster) {
+        layerClusters.forEach(function(layerCluster, i) {
+            console.log(i);
             layerClusterBodies.push(createClusterBody(layerCluster, world));
         });
 
+        console.log(layerClusterBodies);
+
         // Create attractor.
         let attractorBody = world.createBody(planck.Vec2(centroid.x, centroid.y));
+        //console.log(centroid);
 
         // Create joints between layerClusterBodies and attractor.
-        layerClusterBodies.forEach(function(layerClusterBody) {
+        /*layerClusterBodies.forEach(function(layerClusterBody) {
             let distanceJoint = planck.DistanceJoint( {
                     frequencyHz : 0.9, // TODO: Try to avoid overlapping in large datasets!
                     dampingRatio : 0.001 // TODO: ''
@@ -134,7 +144,7 @@
             distanceJoint.m_length = 1; // Set the length to zero as it's calculated as the distance between the anchors. TODO: PR on planck-js repo to fix bug.
 
             world.createJoint(distanceJoint);
-        });
+        });*/
 
         //console.log(layerClusters, layerClusterBodies);
 
@@ -146,7 +156,7 @@
         let positionIterations = 2;
 
         // Simulation loop.
-        for (let i = 0; i < 8000; ++i) {
+        for (let i = 0; i < 80000; ++i) {
             // Instruct the world to perform a single step of simulation.
             // It is generally best to keep the time step and iterations fixed.
             world.step(timestep, velocityIterations, positionIterations);
@@ -158,8 +168,7 @@
                 if(fixture.getShape().getType() === planck.Circle.TYPE) {
                     let center = body.getWorldPoint(fixture.getShape().getCenter());
                     let rawCircle = fixture.getUserData();
-
-                    console.log(rawCircle);
+                    console.log(fixture.getUserData().data.name, center);
                     rawCircle.x = center.x;
                     rawCircle.y = center.y;
                 }
@@ -188,6 +197,13 @@
         });
 
         // Return completed body.
+        for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
+            if(fixture.getShape().getType() === planck.Circle.TYPE) {
+                let center = body.getWorldPoint(fixture.getShape().getCenter());
+                let rawCircle = fixture.getUserData();
+                console.log(fixture.getUserData().data.name, center);
+            }
+        }
         return body;
     }
 
@@ -577,7 +593,7 @@
 
     function contourHierarchy(hierarchyRoot, padding, curvature) {
         let contours = [];
-        for(let layerDepth = hierarchyRoot.height; layerDepth >= 0; layerDepth--) {
+        for(let layerDepth = hierarchyRoot.height; layerDepth >= hierarchyRoot.height-3; layerDepth--) {
             // Get clusters of circles on this layer.
             let layerClusters = getLayerClusters(hierarchyRoot, layerDepth, padding);
 
