@@ -15,10 +15,7 @@
               "uncertainty": 3,
               "children": [
                 {
-                  "name": "<https://cso.kmi.open.ac.uk/topics/digital_forensics>",
-                  "uncertainty": 3,
-                  "children": [
-                    {
+                  
                       "name": "<https://cso.kmi.open.ac.uk/topics/computer_forensics>",
                       "uncertainty": 3,
                       "children": [
@@ -41,8 +38,7 @@
                           ]
                         }
                       ]
-                    }
-                  ]
+                    
                 }
               ]
             },

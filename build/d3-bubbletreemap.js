@@ -76,7 +76,7 @@
 
         pack(hierarchyRoot); // Use pack to arrange circles on deepest layer.
 
-        for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= hierarchyRoot.height - 3; layerDepth--) {
+        for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= hierarchyRoot.height - 4; layerDepth--) {
         //for(let layerDepth = hierarchyRoot.height - 1; layerDepth >= 0; layerDepth--) {
             // Get clusters of circles on this layer.
             let layerClusters = getLayerClusters(hierarchyRoot, layerDepth, padding);
@@ -115,6 +115,7 @@
         // Create world with zero gravity.
         let world = planck.World({
             gravity: planck.Vec2(0,0)
+            //gravity: centroid
         });
 
         // Create bodies for groups.
@@ -133,15 +134,16 @@
         // Create joints between layerClusterBodies and attractor.
         /*layerClusterBodies.forEach(function(layerClusterBody) {
             let distanceJoint = planck.DistanceJoint( {
+                    // Higher frequencyHz makes thread more persistent
                     frequencyHz : 0.9, // TODO: Try to avoid overlapping in large datasets!
-                    dampingRatio : 0.001 // TODO: ''
+                    dampingRatio : 0.0001 // Lower dampingRatio make it sooner for the thread gain original length after being stretched.
                 },
                 attractorBody,
                 attractorBody.getPosition(),
                 layerClusterBody,
                 layerClusterBody.getPosition()
             );
-            distanceJoint.m_length = 1; // Set the length to zero as it's calculated as the distance between the anchors. TODO: PR on planck-js repo to fix bug.
+            distanceJoint.m_length = 2; // Set the length to zero as it's calculated as the distance between the anchors. TODO: PR on planck-js repo to fix bug.
 
             world.createJoint(distanceJoint);
         });*/
@@ -156,23 +158,30 @@
         let positionIterations = 2;
 
         // Simulation loop.
-        for (let i = 0; i < 80000; ++i) {
+        for (let i = 0; i < 66; ++i) {
             // Instruct the world to perform a single step of simulation.
             // It is generally best to keep the time step and iterations fixed.
             world.step(timestep, velocityIterations, positionIterations);
         }
 
+        let svg1 = d3.select("#svgCircles1");
         // Write results back to hierarchy.
         for (let body = world.getBodyList(); body; body = body.getNext()) {
             for (let fixture = body.getFixtureList(); fixture; fixture = fixture.getNext()) {
                 if(fixture.getShape().getType() === planck.Circle.TYPE) {
                     let center = body.getWorldPoint(fixture.getShape().getCenter());
+                    svg1.append("circle")
+                    .attr("cx", center.x)
+                    .attr("cy", center.y)
+                    .attr("r", fixture.getShape().getRadius())
+                    .style("fill-opacity", 0.7) 
+                    .style("fill", "gray");
                     let rawCircle = fixture.getUserData();
-                    console.log(fixture.getUserData().data.name, center);
                     rawCircle.x = center.x;
                     rawCircle.y = center.y;
                 }
             }
+            world.destroyBody(body);
         }
     }
 
@@ -186,7 +195,8 @@
         // Add circles as fixtures.
         let circleFD = {
             density: 1.0,
-            friction: 0.00001
+            friction: 0.00001,
+            restitution: 1.0 // Restitution measures how 'bouncy' a fixture is. 
         };
 
         layerCluster.nodes.forEach(function(circle) {
@@ -593,7 +603,7 @@
 
     function contourHierarchy(hierarchyRoot, padding, curvature) {
         let contours = [];
-        for(let layerDepth = hierarchyRoot.height; layerDepth >= hierarchyRoot.height-3; layerDepth--) {
+        for(let layerDepth = hierarchyRoot.height; layerDepth >= hierarchyRoot.height - 4; layerDepth--) {
             // Get clusters of circles on this layer.
             let layerClusters = getLayerClusters(hierarchyRoot, layerDepth, padding);
 
